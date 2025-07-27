@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin 💻❤️</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(to bottom, #fff0f5, #ffe6f0);
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #b30059;
+    }
+
+    .btn {
+      background: #ff66a3;
+      color: white;
+      padding: 12px 20px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 10px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #e05590;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      max-width: 400px;
+      margin: 0 auto;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Administração do Amor 💌</h1>
+
+  <div class="campo">
+    <button class="btn" id="pensarBtn">Pensei nela 💭❤️</button>
+
+    <input type="text" id="mensagemInput" placeholder="Escreva uma mensagem fofa">
+    <button class="btn" id="enviarMensagemBtn">Enviar mensagem ✨</button>
+
+    <button class="btn" id="enviarEmailBtn">Enviar e-mail com imagem 📩</button>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    const statusDiv = document.getElementById("status");
+
+    function showStatus(msg, color = "green") {
+      statusDiv.innerText = msg;
+      statusDiv.style.color = color;
+      setTimeout(() => statusDiv.innerText = "", 5000);
+    }
+
+    document.getElementById("pensarBtn").addEventListener("click", () => {
+      fetch("http://localhost:8000/pensar", { method: "POST" })
+        .then(r => r.json())
+        .then(data => {
+          showStatus("Pensamento enviado 💖");
+        })
+        .catch(err => {
+          showStatus("Erro ao enviar pensamento 😢", "red");
+          console.error("Erro pensamento:", err);
+        });
+    });
+
+    document.getElementById("enviarMensagemBtn").addEventListener("click", () => {
+      const mensagem = document.getElementById("mensagemInput").value;
+      if (!mensagem) return;
+      fetch("http://localhost:8000/enviar-mensagem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensagem })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === "ok") {
+          showStatus("Mensagem enviada com amor 💌");
+          document.getElementById("mensagemInput").value = "";
+        } else {
+          showStatus("Erro ao enviar mensagem 😢", "red");
+          console.error("Erro mensagem:", data);
+        }
+      })
+      .catch(err => {
+        showStatus("Falha na mensagem 😢", "red");
+        console.error("Erro geral:", err);
+      });
+    });
+
+    document.getElementById("enviarEmailBtn").addEventListener("click", () => {
+      fetch("http://localhost:8000/enviar-email", {
+        method: "POST"
+      })
+      .then(async (r) => {
+        const data = await r.json().catch(() => null);
+        if (r.ok && data && data.status === "ok") {
+          showStatus("Email enviado com carinho 💕");
+        } else {
+          const detalhe = data?.detalhe || "Erro desconhecido";
+          showStatus("Erro ao enviar email 😢", "red");
+          alert("Erro ao enviar email:\n" + detalhe);
+        }
+      })
+      .catch(err => {
+        showStatus("Erro inesperado 😢", "red");
+        alert("Erro inesperado:\n" + err.message);
+        console.error("Erro fetch:", err);
+      });
+    });
+
+    // Conexão WebSocket (opcional aqui, pode ser usada para monitorar ao vivo)
+    const socket = new WebSocket("ws://localhost:8000/ws");
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "pensamento") {
+          console.log("Pensamentos do dia:", data.value);
+        }
+        if (data.type === "mensagem") {
+          console.log("Última mensagem enviada:", data.value);
+        }
+      } catch (e) {
+        console.error("Erro ao interpretar mensagem:", e);
+      }
+    };
+  </script>
+</body>
+</html>

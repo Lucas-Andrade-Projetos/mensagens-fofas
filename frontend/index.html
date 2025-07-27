@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Orbitron', sans-serif;
+      background: black;
+    }
+
+    #matrixCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      display: block;
+    }
+
+    .login-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.65);
+      padding: 35px 30px;
+      width: 320px;
+      border-radius: 16px;
+      z-index: 999;
+      box-shadow: 0 0 20px #ff69b4, 0 0 40px #ff1493;
+      backdrop-filter: blur(12px);
+      color: white;
+      box-sizing: border-box;
+      transition: all 0.4s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .login-box form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    #erroLogin {
+      display: none;
+      color: pink;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 1em;
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 12px #ff69b4;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: #aaa;
+    }
+
+    button {
+      background: linear-gradient(45deg, #ff1493, #ff69b4);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #ff69b4;
+    }
+
+    @media (max-width: 400px) {
+      .login-box {
+        width: 85%;
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrixCanvas"></canvas>
+
+  <div class="login-box">
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Usuário" required />
+      <input type="password" id="password" placeholder="Senha" required />
+      <button type="submit">Entrar</button>
+      <div id="erroLogin">Usuário ou senha incorretos!</div>
+    </form>
+  </div>
+
+  <script>
+    const users = {
+      "yetta": { senha: "gatinhos", destino: "/home.html" },
+      "lucas": { senha: "1234", destino: "/admin.html" }
+    };
+
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const user = document.getElementById("username").value.toLowerCase();
+      const pass = document.getElementById("password").value;
+      if (users[user] && users[user].senha === pass) {
+        window.location.href = users[user].destino;
+      } else {
+        document.getElementById("erroLogin").style.display = 'block';
+      }
+    });
+
+    // Matrix animation
+    const canvas = document.getElementById("matrixCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    const letters = "愛夢心星宇宙101010010101";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#ff69b4";
+      ctx.font = fontSize + "px Orbitron";
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height || Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawMatrix, 33);
+  </script>
+</body>
+</html>

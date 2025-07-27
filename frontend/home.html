@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Oi, Yetta 💖</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      background-size: 400% 400%;
+      animation: gradientMove 20s ease infinite;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px;
+      z-index: 1;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #f0f;
+      text-shadow: 0 0 10px #f0f, 0 0 20px #f0f;
+    }
+
+    #mensagemBtn {
+      background: transparent;
+      color: #0ff;
+      font-size: 1.3rem;
+      padding: 12px 30px;
+      border-radius: 12px;
+      border: 2px solid #0ff;
+      box-shadow: 0 0 10px #0ff, 0 0 20px #0ff inset;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #mensagemBtn:hover {
+      transform: scale(1.05);
+    }
+
+    .mensagem-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .mensagem {
+      font-size: 1.2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #f0f;
+      border-radius: 10px;
+      padding: 12px 20px;
+      display: inline-block;
+      backdrop-filter: blur(4px);
+      text-shadow: 0 0 5px #fff;
+    }
+
+    .coracao {
+      font-size: 4rem;
+      color: #ff005d;
+      text-shadow: 0 0 15px #ff005d;
+      animation: none;
+    }
+
+    @keyframes bater {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+
+    .particulas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .estrela {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #0ff;
+      box-shadow: 0 0 10px #0ff;
+      border-radius: 50%;
+      animation: flutuar 6s linear infinite;
+    }
+
+    @keyframes flutuar {
+      0% { transform: translateY(100vh); opacity: 1; }
+      100% { transform: translateY(-10vh); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="particulas" id="particulas"></div>
+  <div class="container">
+    <h1>Oi, Yetta 💕</h1>
+
+    <div class="mensagem-container">
+      <button id="mensagemBtn">Me mande uma mensagem fofa</button>
+      <div id="mensagem" class="mensagem">Clique no botão acima 💌</div>
+    </div>
+
+    <div style="margin-top: 40px;">
+      <div class="coracao" id="coracao" style="animation: none;">❤️</div>
+      <p>Pensei em você <span id="contador">0</span> vezes hoje!</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const mensagens = [
+        "Você é meu bug favorito no sistema 💻❤️",
+        "Seu sorriso brilha mais que neon 💜",
+        "Penso em você em cada byte 💾",
+        "Te abraçar seria como hackear a realidade ✨",
+        "Você é minha rede segura 🔒💕"
+      ];
+
+      const elMensagem = document.getElementById("mensagem");
+      const elContador = document.getElementById("contador");
+      const elCoracao = document.getElementById("coracao");
+      const btnMensagem = document.getElementById("mensagemBtn");
+
+      // Mensagem aleatória
+      btnMensagem.addEventListener("click", () => {
+        const index = Math.floor(Math.random() * mensagens.length);
+        elMensagem.innerText = mensagens[index];
+      });
+
+      // WebSocket
+      const socket = new WebSocket("ws://localhost:8000/ws");
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === "pensamento") {
+            const valor = parseInt(data.value);
+            elContador.innerText = valor;
+
+            if (valor > 0) {
+              const intensidade = Math.min(valor, 20);
+              const duracao = Math.max(0.2, 1 - intensidade * 0.03);
+              const brilho = 1 + intensidade * 0.05;
+
+              elCoracao.style.animation = `bater ${duracao}s infinite ease-in-out`;
+              elCoracao.style.filter = `brightness(${brilho})`;
+            } else {
+              elCoracao.style.animation = "none";
+              elCoracao.style.filter = "brightness(1)";
+            }
+          }
+
+          if (data.type === "mensagem") {
+            elMensagem.innerText = data.value;
+          }
+        } catch (e) {
+          console.error("Erro ao interpretar mensagem:", e);
+        }
+      };
+
+      // Estrelas flutuantes
+      const container = document.getElementById("particulas");
+      for (let i = 0; i < 40; i++) {
+        const estrela = document.createElement("div");
+        estrela.className = "estrela";
+        estrela.style.left = `${Math.random() * 100}%`;
+        estrela.style.top = `${Math.random() * 100}%`;
+        estrela.style.animationDelay = `${Math.random() * 6}s`;
+        container.appendChild(estrela);
+      }
+    });
+  </script>
+</body>
+</html>
